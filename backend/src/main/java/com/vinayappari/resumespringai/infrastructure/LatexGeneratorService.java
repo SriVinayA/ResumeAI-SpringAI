@@ -19,7 +19,7 @@ import java.util.UUID;
 public class LatexGeneratorService implements PdfGenerator {
 
     @Override
-    public File generatePdf(ResumeData resume) {
+    public PdfResult generatePdf(ResumeData resume) {
         try {
             // 1. Read the template
             File templateFile = new ClassPathResource("template.tex").getFile();
@@ -47,6 +47,18 @@ public class LatexGeneratorService implements PdfGenerator {
             Path texFilePath = tempDir.resolve(fileBaseName + ".tex");
             Files.writeString(texFilePath, texContent);
 
+            // Create Base64 zip for Overleaf
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            try (java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos)) {
+                zos.putNextEntry(new java.util.zip.ZipEntry("resume.cls"));
+                Files.copy(clsDest, zos);
+                zos.closeEntry();
+                zos.putNextEntry(new java.util.zip.ZipEntry("main.tex"));
+                zos.write(texContent.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                zos.closeEntry();
+            }
+            String overleafZipBase64 = java.util.Base64.getEncoder().encodeToString(baos.toByteArray());
+
             // 6. Compile using pdflatex inside a Docker container
             Process process = getProcess(tempDir, fileBaseName);
 
@@ -65,7 +77,7 @@ public class LatexGeneratorService implements PdfGenerator {
                 throw new RuntimeException("Docker LaTeX compilation failed with exit code " + exitCode);
             }
 
-            return tempDir.resolve(fileBaseName + ".pdf").toFile();
+            return new PdfResult(tempDir.resolve(fileBaseName + ".pdf").toFile(), overleafZipBase64);
 
         } catch (Exception e) {
             throw new RuntimeException("Error generating LaTeX PDF: " + e.getMessage(), e);

@@ -12,6 +12,24 @@ interface Props {
 }
 
 export function ResultsPanel({ data, onDownload, onReset, downloading }: Props) {
+  const handleOverleaf = () => {
+    if (!data.overleafZipBase64) return;
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = "https://www.overleaf.com/docs";
+    form.target = "_blank";
+
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "snip_uri";
+    input.value = "data:application/zip;base64," + data.overleafZipBase64;
+
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -79,6 +97,18 @@ export function ResultsPanel({ data, onDownload, onReset, downloading }: Props) 
             </>
           )}
         </Button>
+
+        {data.overleafZipBase64 && (
+          <Button
+            onClick={handleOverleaf}
+            variant="outline"
+            className="flex-1 border-emerald-500/30 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-700 transition-all"
+            size="lg"
+          >
+            <Code2 className="w-4 h-4 mr-2" />
+            Open in Overleaf
+          </Button>
+        )}
 
         <Button
           onClick={onReset}

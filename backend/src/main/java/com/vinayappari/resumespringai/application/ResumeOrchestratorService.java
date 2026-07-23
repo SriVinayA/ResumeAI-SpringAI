@@ -42,10 +42,10 @@ public class ResumeOrchestratorService {
         OptimizationResponse optimized = aiAnalyzer.optimizeResume(parsedResume, parsedJd);
         
         // 4. Generate PDF
-        File generatedPdf = pdfGenerator.generatePdf(optimized.tailoredResume());
+        PdfGenerator.PdfResult generatedPdfResult = pdfGenerator.generatePdf(optimized.tailoredResume());
         
         // 5. Store File
-        String fileId = fileStorage.storeFile(generatedPdf);
+        String fileId = fileStorage.storeFile(generatedPdfResult.pdf());
         
         // 6. Return response
         java.util.List<Map<String, Object>> mappedExperience = optimized.tailoredResume().experience().stream()
@@ -57,17 +57,18 @@ public class ResumeOrchestratorService {
             ))
             .toList();
 
-        return Map.of(
-                "fileId", fileId,
-                "summary", optimized.tailoredResume().summary(),
-                "experience", mappedExperience,
-                "skills", optimized.tailoredResume().skills(),
-                "oldScore", optimized.oldAtsScore(),
-                "newScore", optimized.newAtsScore(),
-                "matchedKeywords", optimized.matchedKeywords(),
-                "missingKeywords", optimized.missingKeywords(),
-                "recommendations", optimized.recommendations(),
-                "downloadUrl", "/api/v1/resume/download/" + fileId
+        return java.util.Map.ofEntries(
+                java.util.Map.entry("fileId", fileId),
+                java.util.Map.entry("summary", optimized.tailoredResume().summary()),
+                java.util.Map.entry("experience", mappedExperience),
+                java.util.Map.entry("skills", optimized.tailoredResume().skills()),
+                java.util.Map.entry("oldScore", optimized.oldAtsScore()),
+                java.util.Map.entry("newScore", optimized.newAtsScore()),
+                java.util.Map.entry("matchedKeywords", optimized.matchedKeywords()),
+                java.util.Map.entry("missingKeywords", optimized.missingKeywords()),
+                java.util.Map.entry("recommendations", optimized.recommendations()),
+                java.util.Map.entry("downloadUrl", "/api/v1/resume/download/" + fileId),
+                java.util.Map.entry("overleafZipBase64", generatedPdfResult.overleafZipBase64())
         );
     }
 

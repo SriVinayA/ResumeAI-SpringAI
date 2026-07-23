@@ -13,6 +13,7 @@ export interface AnalyzeResponse {
   oldScore?: number;
   newScore?: number;
   downloadUrl?: string;
+  overleafZipBase64?: string;
 }
 
 export type AppPhase = "input" | "loading" | "results";
