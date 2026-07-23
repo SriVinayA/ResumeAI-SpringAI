@@ -5,3 +5,4 @@
 *.env
 node_modules/
 dist/
+Backend/src/main/resources/generated-resumes/
