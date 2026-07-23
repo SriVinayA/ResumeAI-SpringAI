@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: ResumeSpringAI
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
+  ai:
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY}
