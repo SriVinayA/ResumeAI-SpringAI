@@ -106,10 +106,36 @@ public class LatexGeneratorService implements PdfGenerator {
         String result = template;
 
         // Basic Strings
-        result = result.replace("{{NAME}}", LatexEscapeUtil.escape(resume.name()));
-        result = result.replace("{{EMAIL}}", LatexEscapeUtil.escape(resume.email()));
-        result = result.replace("{{PHONE}}", LatexEscapeUtil.escape(resume.phone()));
-        result = result.replace("{{SUMMARY}}", LatexEscapeUtil.escape(resume.summary()));
+        result = result.replace("{{NAME}}", resume.name() != null ? LatexEscapeUtil.escape(resume.name()) : "");
+        result = result.replace("{{SUMMARY}}", resume.summary() != null ? LatexEscapeUtil.escape(resume.summary()) : "");
+
+        java.util.List<String> contactInfo = new java.util.ArrayList<>();
+        if (resume.email() != null && !resume.email().isBlank()) {
+            contactInfo.add("\\href{mailto:" + LatexEscapeUtil.escape(resume.email()) + "}{" + LatexEscapeUtil.escape(resume.email()) + "}");
+        }
+        if (resume.phone() != null && !resume.phone().isBlank()) {
+            contactInfo.add("\\href{tel:" + LatexEscapeUtil.escape(resume.phone()) + "}{" + LatexEscapeUtil.escape(resume.phone()) + "}");
+        }
+        if (resume.location() != null && !resume.location().isBlank()) {
+            contactInfo.add(LatexEscapeUtil.escape(resume.location()));
+        }
+        if (resume.linkedin() != null && !resume.linkedin().isBlank()) {
+            contactInfo.add("\\href{" + LatexEscapeUtil.escape(resume.linkedin()) + "}{LinkedIn}");
+        }
+        if (resume.github() != null && !resume.github().isBlank()) {
+            contactInfo.add("\\href{" + LatexEscapeUtil.escape(resume.github()) + "}{GitHub}");
+        }
+        if (resume.portfolio() != null && !resume.portfolio().isBlank()) {
+            contactInfo.add("\\href{" + LatexEscapeUtil.escape(resume.portfolio()) + "}{Portfolio}");
+        }
+        if (resume.otherLinks() != null) {
+            for (String link : resume.otherLinks()) {
+                if (link != null && !link.isBlank()) {
+                    contactInfo.add("\\href{" + LatexEscapeUtil.escape(link) + "}{" + LatexEscapeUtil.escape(link) + "}");
+                }
+            }
+        }
+        result = result.replace("{{CONTACT_INFO}}", String.join(" $|$ ", contactInfo));
 
         // Skills (Categorized list)
         StringBuilder skillsBuilder = new StringBuilder();
@@ -159,9 +185,13 @@ public class LatexGeneratorService implements PdfGenerator {
                 String tech = String.join(", ", proj.technologies().stream().map(LatexEscapeUtil::escape).toList());
                 projBuilder.append("\\resumeProjectHeading\n")
                         .append("  {\\textbf{").append(LatexEscapeUtil.escape(proj.name())).append("} $|$ \\emph{").append(tech).append("}}{}\n")
-                        .append("  \\resumeItemListStart\n")
-                        .append("    \\resumeItem{").append(LatexEscapeUtil.escape(proj.description())).append("}\n")
-                        .append("  \\resumeItemListEnd\n");
+                        .append("  \\resumeItemListStart\n");
+                if (proj.description() != null) {
+                    for (String desc : proj.description()) {
+                        projBuilder.append("    \\resumeItem{").append(LatexEscapeUtil.escape(desc)).append("}\n");
+                    }
+                }
+                projBuilder.append("  \\resumeItemListEnd\n");
             }
             projBuilder.append("\\resumeSubHeadingListEnd\n");
         }
