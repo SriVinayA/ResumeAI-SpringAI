@@ -120,18 +120,18 @@ public class LatexGeneratorService implements PdfGenerator {
             contactInfo.add(LatexEscapeUtil.escape(resume.location()));
         }
         if (resume.linkedin() != null && !resume.linkedin().isBlank()) {
-            contactInfo.add("\\href{" + LatexEscapeUtil.escape(resume.linkedin()) + "}{LinkedIn}");
+            contactInfo.add("\\href{" + LatexEscapeUtil.escape(ensureHttps(resume.linkedin())) + "}{LinkedIn}");
         }
         if (resume.github() != null && !resume.github().isBlank()) {
-            contactInfo.add("\\href{" + LatexEscapeUtil.escape(resume.github()) + "}{GitHub}");
+            contactInfo.add("\\href{" + LatexEscapeUtil.escape(ensureHttps(resume.github())) + "}{GitHub}");
         }
         if (resume.portfolio() != null && !resume.portfolio().isBlank()) {
-            contactInfo.add("\\href{" + LatexEscapeUtil.escape(resume.portfolio()) + "}{Portfolio}");
+            contactInfo.add("\\href{" + LatexEscapeUtil.escape(ensureHttps(resume.portfolio())) + "}{Portfolio}");
         }
         if (resume.otherLinks() != null) {
             for (String link : resume.otherLinks()) {
                 if (link != null && !link.isBlank()) {
-                    contactInfo.add("\\href{" + LatexEscapeUtil.escape(link) + "}{" + LatexEscapeUtil.escape(link) + "}");
+                    contactInfo.add("\\href{" + LatexEscapeUtil.escape(ensureHttps(link)) + "}{" + LatexEscapeUtil.escape(link) + "}");
                 }
             }
         }
@@ -226,5 +226,13 @@ public class LatexGeneratorService implements PdfGenerator {
         result = result.replace("{{CERTIFICATIONS_SECTION}}", certBuilder.toString());
 
         return result;
+    }
+
+    private String ensureHttps(String url) {
+        if (url == null || url.isBlank()) return url;
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            return "https://" + url;
+        }
+        return url;
     }
 }
